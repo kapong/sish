@@ -15,11 +15,7 @@ RUN go mod download
 
 COPY . .
 
-ARG VERSION=dev
-ARG COMMIT=none
-ARG DATE=unknown
-
-RUN go install -ldflags="-s -w -X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${DATE}"
+RUN go install 
 RUN go test -i ./...
 
 FROM scratch

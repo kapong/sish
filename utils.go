@@ -25,7 +25,7 @@ import (
 )
 
 var (
-	certHolder = make([]ssh.PublicKey, 0)
+	certHolder = make(map[string][]ssh.PublicKey, 0)
 	holderLock = sync.Mutex{}
 )
 
@@ -158,7 +158,7 @@ func watchCerts() {
 }
 
 func loadCerts() {
-	tmpCertHolder := make([]ssh.PublicKey, 0)
+	tmpCertHolder := make(map[string][]ssh.PublicKey, 0)
 
 	files, err := ioutil.ReadDir(*authKeysDir)
 	if err != nil {
@@ -166,6 +166,7 @@ func loadCerts() {
 	}
 
 	parseKey := func(keyBytes []byte, fileInfo os.FileInfo) {
+		tmpCertHolder[fileInfo.Name()] = make([]ssh.PublicKey, 0)
 		keyHandle := func(keyBytes []byte, fileInfo os.FileInfo) []byte {
 			key, _, _, rest, e := ssh.ParseAuthorizedKey(keyBytes)
 			if e != nil {
@@ -173,7 +174,7 @@ func loadCerts() {
 			}
 
 			if key != nil {
-				tmpCertHolder = append(tmpCertHolder, key)
+				tmpCertHolder[fileInfo.Name()] = append(tmpCertHolder[fileInfo.Name()], key)
 			}
 			return rest
 		}
@@ -212,7 +213,7 @@ func getSSHConfig() *ssh.ServerConfig {
 
 			holderLock.Lock()
 			defer holderLock.Unlock()
-			for _, i := range certHolder {
+			for _, i := range certHolder[c.User()] {
 				if bytes.Equal(key.Marshal(), i.Marshal()) {
 					return nil, nil
 				}

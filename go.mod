@@ -1,4 +1,4 @@
-module github.com/antoniomika/sish
+module github.com/kapong/sish
 
 require (
 	github.com/fsnotify/fsnotify v1.4.7
